@@ -1,6 +1,7 @@
 name: replay-lab
 description: JSHook workflow for replay-lab
 author: vmoranv
+source_repo: https://github.com/vmoranv/jshook_workflow_replay_lab
 tags:
   - workflow
   - replay-lab
