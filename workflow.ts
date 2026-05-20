@@ -1,13 +1,14 @@
 import {
-  createWorkflow,
+  defineWorkflow,
+  sequenceStep,
   type WorkflowExecutionContext,
-  SequenceNodeBuilder,
 } from '@jshookmcp/extension-sdk/workflow';
 
 const workflowId = 'workflow.replay-lab.v1';
 
-export default createWorkflow(workflowId, 'Replay Lab')
-  .description(
+export default defineWorkflow(workflowId, 'Replay Lab', (workflow) =>
+  workflow
+.description(
     'Captures a target request, extracts its full context (headers, cookies, auth tokens, body), replays it with modifications, compares responses, and produces a replay script — enabling parameter tampering, signature validation, and API probing.',
   )
   .tags(['reverse', 'replay', 'request', 'api', 'tamper', 'probe', 'mission'])
@@ -23,7 +24,7 @@ export default createWorkflow(workflowId, 'Replay Lab')
     const maxConcurrency = Number(ctx.getConfig(`${prefix}.parallel.maxConcurrency`, 3));
     const exportHar = Boolean(ctx.getConfig(`${prefix}.exportHar`, true));
 
-    const root = new SequenceNodeBuilder('replay-lab-root');
+    return sequenceStep('replay-lab-root', (root) => {
 
     // Phase 1: Network Setup & Navigate
     root
@@ -92,7 +93,7 @@ export default createWorkflow(workflowId, 'Replay Lab')
         },
       });
 
-    return root;
+    });
   })
   .onStart((ctx) => {
     ctx.emitMetric('workflow_runs_total', 1, 'counter', { workflowId, mission: 'replay_lab', stage: 'start' });
@@ -103,4 +104,4 @@ export default createWorkflow(workflowId, 'Replay Lab')
   .onError((ctx, error) => {
     ctx.emitMetric('workflow_errors_total', 1, 'counter', { workflowId, mission: 'replay_lab', stage: 'error', error: error.name });
   })
-  .build();
+  );
